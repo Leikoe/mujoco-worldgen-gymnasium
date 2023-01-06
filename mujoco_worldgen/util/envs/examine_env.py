@@ -1,9 +1,7 @@
 from mujoco_worldgen.util.envs.flexible_load import load_env
-from mujoco_worldgen.util.envs.env_viewer import EnvViewer
 
 
-def examine_env(env_name, env_kwargs, core_dir, envs_dir, xmls_dir='xmls',
-                env_viewer=EnvViewer, seed=None):
+def examine_env(env_name, env_kwargs, core_dir, envs_dir, xmls_dir='xmls', seed=None):
     '''
         Loads an environment and allows the user to examine it.
         Args:
@@ -29,7 +27,16 @@ def examine_env(env_name, env_kwargs, core_dir, envs_dir, xmls_dir='xmls',
     assert len(args_remaining) == 0, (
         f"There left unused arguments: {args_remaining}. There shouldn't be any.")
     if env is not None:
-        env_viewer(env).run()
+        env.reset(seed=42)
+        for _ in range(1000):
+            action = env.action_space.sample()  # this is where you would insert your policy
+            observation, reward, terminated, truncated, info = env.step(action)
+
+            if terminated or truncated:
+                env.reset()
+        env.close()
+
+
     else:
         print('"{}" doesn\'t seem to be a valid environment'.format(env_name))
 

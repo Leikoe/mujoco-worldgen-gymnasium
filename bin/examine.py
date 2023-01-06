@@ -2,7 +2,7 @@
 import click
 import logging
 
-from mujoco_worldgen.util.envs import EnvViewer, examine_env
+from mujoco_worldgen.util.envs import examine_env
 from mujoco_worldgen.util.path import worldgen_path
 from mujoco_worldgen.util.parse_arguments import parse_arguments
 
@@ -27,8 +27,7 @@ def main(argv):
     assert len(env_names) == 1, 'You must provide exactly 1 environment to examine.'
     env_name = env_names[0]
     examine_env(env_name, env_kwargs,
-                core_dir=worldgen_path(), envs_dir='examples', xmls_dir='xmls',
-                env_viewer=EnvViewer)
+                core_dir=worldgen_path(), envs_dir='examples', xmls_dir="xmls")
 
     print(main.__doc__)
 

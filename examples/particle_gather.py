@@ -6,15 +6,13 @@ import numpy as np
 import gymnasium
 from gymnasium.spaces import Box, Dict
 
-from mujoco_worldgen import Floor, WorldBuilder, Geom, ObjFromXML, WorldParams, MujocoEnv
+from mujoco_worldgen import Floor, WorldBuilder, Geom, ObjFromXML, WorldParams, Env
 
 
 def update_obs_space(env, delta):
-    print(env.observation_space)
     spaces = env.observation_space.spaces.copy()
     for key, shape in delta.items():
         spaces[key] = Box(-np.inf, np.inf, shape, np.float32)
-    print(Dict(spaces))
     return Dict(spaces)
 
 
@@ -25,7 +23,7 @@ def rand_pos_on_floor(model, data, n=1):
     return new_pos
 
 
-class GatherEnv(MujocoEnv):
+class GatherEnv(Env):
     def __init__(self, n_food=3, horizon=200, n_substeps=10,
                  floorsize=4., deterministic_mode=False):
         self.n_food = n_food
@@ -185,7 +183,6 @@ class ProcessEatFood(gymnasium.Wrapper):
 
 def make_env(n_food=3, horizon=50, floorsize=4.):
     env = GatherEnv(horizon=horizon, floorsize=floorsize, n_food=n_food)
-    print(env.reset())
     env = FoodHealthWrapper(env)
     env = ProcessEatFood(env)
     env.reset()

@@ -35,7 +35,7 @@ class EmptyEnvException(Exception):
     pass
 
 
-class MujocoEnv(BaseMujocoEnv):
+class Env(BaseMujocoEnv):
     """Superclass for MuJoCo environments."""
 
     metadata = {
@@ -50,7 +50,7 @@ class MujocoEnv(BaseMujocoEnv):
     def __init__(
             self,
             get_sim,
-            frame_skip,
+            frame_skip=0,
             model_path="",
             get_obs=flatten_get_obs,
             get_reward=zero_get_reward,
@@ -160,6 +160,9 @@ class MujocoEnv(BaseMujocoEnv):
             self.model, self.data, default_camera_config
         )
 
+        obs = self.get_obs(self.model, self.data)
+        self.observation_space = gym_space_from_arrays(obs)
+
     def step(self, action):
         action = np.asarray(action)
         assert self.action_space.contains(action), (
@@ -217,7 +220,6 @@ class MujocoEnv(BaseMujocoEnv):
 
         observation = self.get_obs(self.model, self.data)
         self.observation_space = gym_space_from_arrays(observation)
-        print(f"obs: {observation}")
         return observation
 
     def set_state(self, qpos, qvel):

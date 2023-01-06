@@ -1,6 +1,6 @@
 import numpy as np
 import time
-from mujoco_py import const, MjViewer, ignore_mujoco_warnings
+# from mujoco_py import const, MjViewer, ignore_mujoco_warnings
 import glfw
 from gym.spaces import Box
 from gym.spaces import MultiDiscrete
@@ -75,10 +75,13 @@ class EnvViewer(MjViewer):
         while True:
             with ignore_mujoco_warnings():
                 self.env.step(self.action)
-            self.add_overlay(const.GRID_TOPRIGHT, "Reset env; (current seed: {})".format(self.seed), "N - next / P - previous ")
+            self.add_overlay(const.GRID_TOPRIGHT, "Reset env; (current seed: {})".format(self.seed),
+                             "N - next / P - previous ")
             self.add_overlay(const.GRID_TOPRIGHT, "Apply action", "A (-0.05) / Z (+0.05)")
-            self.add_overlay(const.GRID_TOPRIGHT, "on action index %d out %d" % (self.action_mod_index, self.num_action), "J / K")
-            self.add_overlay(const.GRID_BOTTOMRIGHT, "Reset took", "%.2f sec." % (sum(self.elapsed) / len(self.elapsed)))
+            self.add_overlay(const.GRID_TOPRIGHT,
+                             "on action index %d out %d" % (self.action_mod_index, self.num_action), "J / K")
+            self.add_overlay(const.GRID_BOTTOMRIGHT, "Reset took",
+                             "%.2f sec." % (sum(self.elapsed) / len(self.elapsed)))
             self.add_overlay(const.GRID_BOTTOMRIGHT, "Action", str(self.action))
             self.render()
             if once:

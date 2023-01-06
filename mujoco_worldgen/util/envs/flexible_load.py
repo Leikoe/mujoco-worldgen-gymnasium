@@ -6,7 +6,8 @@ from os.path import join
 from collections import OrderedDict
 from glob import glob
 
-from mujoco_py import load_model_from_xml, load_model_from_mjb, MjSim
+# from mujoco_py import load_model_from_xml, load_model_from_mjb, MjSim
+import mujoco
 from runpy import run_path
 
 from mujoco_worldgen import Env
@@ -25,6 +26,7 @@ def get_function(fn_data):
             actual_kwargs = extra_args.copy()
             actual_kwargs.update(kwargs)
             return result(*args, **actual_kwargs)
+
         return result_wrapper
     else:
         return result
@@ -58,6 +60,7 @@ def load_env(pattern, core_dir=worldgen_path(), envs_dir='examples', xmls_dir='x
         def get_sim(seed):
             model = load_model_from_path_fix_paths(xml_path=pattern)
             return MjSim(model)
+
         env = Env(get_sim=get_sim)
     # Loads environment based on mjb.
     elif pattern.endswith(".mjb"):
@@ -69,6 +72,7 @@ def load_env(pattern, core_dir=worldgen_path(), envs_dir='examples', xmls_dir='x
         def get_sim(seed):
             model = load_model_from_mjb(pattern)
             return MjSim(model)
+
         env = Env(get_sim=get_sim)
     # Loads environment from a python file
     elif pattern.endswith("py") and os.path.exists(pattern):
