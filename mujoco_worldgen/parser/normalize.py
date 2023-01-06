@@ -192,7 +192,7 @@ def stringify(xml_dict):
             if len(value) == 0:
                 del xml_dict[key]
             else:
-                if sum([isinstance(v, (int, float, np.float32, np.int)) for v in value]) == len(value):
+                if sum([isinstance(v, (int, float, np.float32, np.intc)) for v in value]) == len(value):
                     xml_dict[key] = vec2str(value)
                 else:
                     stringify(value)

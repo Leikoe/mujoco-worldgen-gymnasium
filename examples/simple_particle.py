@@ -1,5 +1,5 @@
 import numpy as np
-from mujoco_worldgen import Env, WorldParams, WorldBuilder, Floor, ObjFromXML
+from mujoco_worldgen import MujocoEnv, WorldParams, WorldBuilder, Floor, ObjFromXML
 
 
 def get_reward(sim):
@@ -22,4 +22,5 @@ def get_sim(seed):
 
 
 def make_env():
-    return Env(get_sim=get_sim, get_reward=get_reward, horizon=30)
+    return MujocoEnv(get_sim, frame_skip=4, render_mode="human")
+    # return Env(get_sim=get_sim, get_reward=get_reward, horizon=30)

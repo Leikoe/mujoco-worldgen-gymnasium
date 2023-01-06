@@ -1,28 +1,31 @@
 import logging
+
+import mujoco
 import numpy as np
 import itertools
 
 logger = logging.getLogger(__name__)
+
 
 # #######################################
 # ############ set_action ###############
 # #######################################
 
 
-def ctrl_set_action(sim, action):
+def ctrl_set_action(model: mujoco.MjModel, data: mujoco.MjData, action):
     """
     For torque actuators it copies the action into mujoco ctrl field.
     For position actuators it sets the target relative to the current qpos.
     """
-    if sim.model.nmocap > 0:
-        _, action = np.split(action, (sim.model.nmocap * 7, ))
-    if sim.data.ctrl is not None:
+    if model.nmocap > 0:
+        _, action = np.split(action, (model.nmocap * 7,))
+    if data.ctrl is not None:
         for i in range(action.shape[0]):
-            if sim.model.actuator_biastype[i] == 0:
-                sim.data.ctrl[i] = action[i]
+            if model.actuator_biastype[i] == 0:
+                data.ctrl[i] = action[i]
             else:
-                idx = sim.model.jnt_qposadr[sim.model.actuator_trnid[i, 0]]
-                sim.data.ctrl[i] = sim.data.qpos[idx] + action[i]
+                idx = model.jnt_qposadr[model.actuator_trnid[i, 0]]
+                data.ctrl[i] = data.qpos[idx] + action[i]
 
 
 # #######################################
@@ -30,7 +33,7 @@ def ctrl_set_action(sim, action):
 # #######################################
 
 
-def zero_get_reward(sim):
+def zero_get_reward(model: mujoco.MjModel, data: mujoco.MjData):
     return 0.0
 
 
@@ -46,44 +49,47 @@ def l2_dist(sim, obj0, obj1):
     obj1 = sim.data.get_site_xpos(obj1)
     return np.sqrt(np.mean(np.square(obj0 - obj1)))
 
+
 # #######################################
 # ########### get_diverged ##############
 # #######################################
 
 
-def false_get_diverged(sim):
+def false_get_diverged(model: mujoco.MjModel, data: mujoco.MjData):
     return False, 0.0
 
 
-def simple_get_diverged(sim):
-
-    if sim.data.qpos is not None and \
-         (np.max(np.abs(sim.data.qpos)) > 1000.0 or
-          np.max(np.abs(sim.data.qvel)) > 100.0):
+def simple_get_diverged(model: mujoco.MjModel, data: mujoco.MjData):
+    if data.qpos is not None and \
+            (np.max(np.abs(data.qpos)) > 1000.0 or
+             np.max(np.abs(data.qvel)) > 100.0):
         return True, -20.0
     return False, 0.0
+
 
 # #######################################
 # ########### get_info ##############
 # #######################################
 
 
-def empty_get_info(sim):
+def empty_get_info(model: mujoco.MjModel, data: mujoco.MjData):
     return {}
+
 
 # #######################################
 # ############## get_obs ################
 # #######################################
 
 
-def flatten_get_obs(sim):
-    if sim.data.qpos is None:
+def flatten_get_obs(model: mujoco.MjModel, data: mujoco.MjData):
+    if data.qpos is None:
         return np.zeros(0)
-    return np.concatenate([sim.data.qpos, sim.data.qvel])
+    return np.concatenate([data.qpos, data.qvel])
 
 
 def image_get_obs(sim):
     return sim.render(100, 100, camera_name="rgb")
+
 
 # Helpers
 

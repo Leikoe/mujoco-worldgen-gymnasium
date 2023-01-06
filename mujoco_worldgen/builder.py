@@ -2,8 +2,9 @@ import logging
 from collections import OrderedDict
 from copy import deepcopy as copy
 
+import mujoco
 import numpy as np
-from mujoco_py import const, load_model_from_xml, MjSim
+# from mujoco_py import const, load_model_from_xml, MjSim
 
 from mujoco_worldgen.util.path import worldgen_path
 from mujoco_worldgen.objs.obj import Obj
@@ -21,7 +22,7 @@ class WorldBuilder(Obj):
         super(WorldBuilder, self).__init__()
         # Normally size is set during generate() but we are the top level world
         self.size = world_params.size
-        # Normally relative_position is set by our parent but we are the root.
+        # Normally relative_position is set by our parent, but we are the root.
         self.relative_position = (0, 0)
 
     def append(self, obj):
@@ -61,7 +62,7 @@ class WorldBuilder(Obj):
             transform(xml_dict)
         return xml_dict
 
-    def get_sim(self):
+    def get_sim(self) -> (mujoco.MjModel, mujoco.MjData):
         self.placements = OrderedDict()
         self.placements["top"] = {"origin": np.zeros(3),
                                   "size": self.world_params.size}
@@ -76,28 +77,28 @@ class WorldBuilder(Obj):
         udd_callbacks = self.to_udd_callback()
         xml = unparse_dict(xml_dict)
 
-        model = load_model_from_xml(xml)
-        sim = MjSim(model, nsubsteps=self.world_params.num_substeps)
+        model: mujoco.MjModel = mujoco.MjModel.from_xml_string(xml)
+        data: mujoco.MjData = mujoco.MjData(model)  # TODO: use self.world_params.num_substeps
         for name, value in xinit_dict.items():
-            sim.data.set_joint_qpos(name, value)
+            data.joint(name).qpos = value
         # Places mocap where related bodies are.
-        if sim.model.nmocap > 0 and sim.model.eq_data is not None:
-            for i in range(sim.model.eq_data.shape[0]):
-                if sim.model.eq_type[i] == const.EQ_WELD:
-                    sim.model.eq_data[i, :] = np.array(
+        if model.nmocap > 0 and model.eq_data is not None:
+            for i in range(model.eq_data.shape[0]):
+                if model.eq_type[i] == mujoco.EQ_WELD:
+                    model.eq_data[i, :] = np.array(
                         [0., 0., 0., 1., 0., 0., 0.])
-        udd_callbacks = (udd_callbacks or [])
-        if udd_callbacks is not None and len(udd_callbacks) > 0:
-            def merged_udd_callback(sim):
-                ret = {}
-                for udd_callback in udd_callbacks:
-                    ret.update(udd_callback(sim))
-                return ret
-            sim.udd_callback = merged_udd_callback
-        return sim
+        # udd_callbacks = (udd_callbacks or [])
+        # if udd_callbacks is not None and len(udd_callbacks) > 0:
+        #     def merged_udd_callback(sim):
+        #         ret = {}
+        #         for udd_callback in udd_callbacks:
+        #             ret.update(udd_callback(sim))
+        #         return ret
+        #     sim.udd_callback = merged_udd_callback
+        return model, data
 
 
 class FullVirtualWorldException(Exception):
     def __init__(self, msg=''):
         Exception.__init__(self, "Virtual world is full of objects. " +
-                                 "Cannot allocate more of them. " + msg)
+                           "Cannot allocate more of them. " + msg)

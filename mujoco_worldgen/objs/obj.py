@@ -51,7 +51,6 @@ class Obj(object):
         #  - generate_name (non recursive function. Can be overriden).
         #  - to_names (recursive function)
 
-
         # ####################
         # ### Third Phase ####
         # ####################
@@ -286,7 +285,7 @@ class Obj(object):
                 placement = self.placements[placement_name]
                 for child, _ in self.children[placement_name]:
                     child.size, child.placement = None, None
-                    placement_size = np.array(placement['size'], dtype=np.float)
+                    placement_size = np.array(placement['size'], dtype=np.float32)
                     placement_size[0] -= 2 * world_params.placement_margin
                     placement_size[1] -= 2 * world_params.placement_margin
                     child.generate(random_state, world_params, placement_size)
@@ -350,7 +349,7 @@ class Obj(object):
         assert len(origin) == 3, "Invalid origin: {}".format(origin)
         assert len(self.relative_position) == 2, \
             "Invalid relative_position: {}".format(self.relative_position)
-        self.absolute_position = np.array(origin, dtype=np.float)
+        self.absolute_position = np.array(origin, dtype=np.float32)
         # Note relative_position is X,Y but our absolute_position is X,Y,Z
         self.absolute_position[:2] += self.relative_position
         for placement_name, children in self.children.items():
@@ -363,7 +362,7 @@ class Obj(object):
         for marker in self.markers:
             if marker['relative_xyz'] is not None:
                 relative_xyz = np.array(marker['relative_xyz'], dtype='f8')
-                marker['position'] = relative_xyz * np.array(self.size, dtype=np.float)
+                marker['position'] = relative_xyz * np.array(self.size, dtype=np.float32)
                 for i in range(3):
                     if np.abs(self.size[i]) < 1e-4:
                         marker["position"][i] = relative_xyz[i]
@@ -406,11 +405,11 @@ class Obj(object):
 
         if len(self.markers) > 0:
             bodies = [body for body in self.xml_dict["worldbody"]
-                      ["body"] if "annotation" not in body["@name"] and
-                                  ("@mocap" not in body or not body["@mocap"])]
+            ["body"] if "annotation" not in body["@name"] and
+                      ("@mocap" not in body or not body["@mocap"])]
             assert len(bodies) == 1, ("Object %s should have only one body " % self) + \
-                "to attach markers to. Otherwise mark() is" + \
-                "ambiguous."
+                                     "to attach markers to. Otherwise mark() is" + \
+                                     "ambiguous."
             body = bodies[0]
             if "site" not in body:
                 body["site"] = []
@@ -431,6 +430,7 @@ class Obj(object):
                 if "geom" in node:
                     for g in node["geom"]:
                         g["@material"] = self._material.name
+
             closure_transform(assign_material)(self.xml_dict)
 
         update_mujoco_dict(full_xml_dict, self.xml_dict)

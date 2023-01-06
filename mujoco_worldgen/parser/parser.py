@@ -37,7 +37,8 @@ def parse_file(xml_path, enforce_validation=True):
     with open(xml_path) as f:
         xml_string = f.read()
 
-    xml_doc_dict = xmltodict.parse(xml_string.strip())
+    xml_doc_dict = xmltodict.parse(xml_string.strip(), dict_constructor=OrderedDict)
+
     assert 'mujoco' in xml_doc_dict, "XML must contain <mujoco> node"
     xml_dict = xml_doc_dict['mujoco']
     assert isinstance(xml_dict, OrderedDict), \
@@ -98,6 +99,7 @@ def extract_includes(xml_dict, root_xml_path, enforce_validation=True):
     '''
     extracts "include" xmls and substitutes them.
     '''
+
     def transform_include(node):
         if "include" in node:
             if isinstance(node["include"], OrderedDict):
@@ -118,6 +120,7 @@ def extract_includes(xml_dict, root_xml_path, enforce_validation=True):
             for include_xml in include_xmls:
                 preprocess(include_xml, root_xml_path, enforce_validation=enforce_validation)
                 update_mujoco_dict(node, include_xml)
+
     closure_transform(transform_include)(xml_dict)
 
 
@@ -135,12 +138,14 @@ def update_mujoco_dict(dict_a, dict_b):
             assert isinstance(value, list), "Expected %s to be a list" % value
             dict_a[key] += value
         elif isinstance(value, other):
-            assert(isinstance(dict_a[key], other))
+            assert (isinstance(dict_a[key], other))
             assert dict_a[key] == value, "key=%s\n,Trying to merge dictionaries. " \
                                          "They don't agree on value: %s vs %s" % (key, dict_a[key], value)
         else:
-            assert isinstance(dict_a[key], OrderedDict), "dict_a = %s\nkey=%s\nExpected dict_a[key] to be a OrderedDict." % (dict_a, key)
-            assert(isinstance(value, OrderedDict))
+            assert isinstance(dict_a[key],
+                              OrderedDict), "dict_a = %s\nkey=%s\nExpected dict_a[key] to be a OrderedDict." % (
+                dict_a, key)
+            assert (isinstance(value, OrderedDict))
             update_mujoco_dict(dict_a[key], value)
 
 
