@@ -1,4 +1,5 @@
-from examples.simple_particle import make_env
+# from examples.simple_particle import make_env
+from examples.particle_gather import make_env
 
 env = make_env()
 
