@@ -50,7 +50,7 @@ class Env(BaseMujocoEnv):
     def __init__(
             self,
             get_sim,
-            frame_skip=0,
+            frame_skip=4,
             model_path="",
             get_obs=flatten_get_obs,
             get_reward=zero_get_reward,

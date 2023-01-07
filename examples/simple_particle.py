@@ -2,10 +2,10 @@ import numpy as np
 from mujoco_worldgen import Env, WorldParams, WorldBuilder, Floor, ObjFromXML
 
 
-def get_reward(sim):
-    object_xpos = sim.data.get_site_xpos("object")
-    target_xpos = sim.data.get_site_xpos("target")
-    ctrl = np.sum(np.square(sim.data.ctrl))
+def get_reward(model, data):
+    object_xpos = data.site("object").xpos
+    target_xpos = data.site("target").xpos
+    ctrl = np.sum(np.square(data.ctrl))
     return -np.sum(np.square(object_xpos - target_xpos)) - 1e-3 * ctrl
 
 
@@ -22,5 +22,4 @@ def get_sim(seed):
 
 
 def make_env():
-    return Env(get_sim, frame_skip=4, render_mode="human")
-    # return Env(get_sim=get_sim, get_reward=get_reward, horizon=30)
+    return Env(get_sim, get_reward=get_reward, render_mode="human", horizon=30)
