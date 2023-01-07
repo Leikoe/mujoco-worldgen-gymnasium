@@ -57,6 +57,7 @@ class Env(BaseMujocoEnv):
             get_info=empty_get_info,
             get_diverged=false_get_diverged,
             set_action=ctrl_set_action,
+            action_space=None,
 
             render_mode: Optional[str] = None,
             horizon=100,
@@ -162,6 +163,9 @@ class Env(BaseMujocoEnv):
 
         obs = self.get_obs(self.model, self.data)
         self.observation_space = gym_space_from_arrays(obs)
+        # if provided with action_space, use it
+        if action_space is not None:
+            self.action_space = action_space
 
     def step(self, action):
         action = np.asarray(action)
